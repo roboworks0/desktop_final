@@ -272,6 +272,18 @@ int main(int argc, char *argv[])
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, [&]() {
         //cap >> frame;
+        // Receive the sensor data in tuple
+        char sensor_buffer[12];
+        if(read(new_socket, sensor_buffer, sizeof(sensor_buffer)) == 0 ) {
+            perror("client disconnected");
+            return 1;
+        }
+        // Unpack the received bytes into a tuple
+        int value1 = *reinterpret_cast<int*>(sensor_buffer);
+        int value2 = *reinterpret_cast<int*>(sensor_buffer + 4);
+        int value3 = *reinterpret_cast<int*>(sensor_buffer + 8);
+
+        std::cout << "value1 : " << value1 << ", value2 : " << value2 << ", value3 : " << value3 << std::endl;
 
         std::cout << "debug1\n";
         if (read(new_socket, &message_size, sizeof(message_size)) == 0) {
@@ -312,11 +324,12 @@ int main(int argc, char *argv[])
         cout << "Time taken by function: "
             << duration.count() * 0.001 << " miliseconds" << endl;
 
-
+        /*
         std::cout << "bytes_read : " << bytes_read << "\n";
         for(int i=0; i<10; i++){
             std::cout << "byte number " << i << " " << int(buffer[i]) << "\n";
         }
+        */
 
         start = high_resolution_clock::now();
 
