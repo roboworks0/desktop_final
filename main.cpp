@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
+#include <QTcpSocket>
 #include <opencv2/opencv.hpp>
 
 #include <iostream>
@@ -42,7 +43,7 @@ void applyNMS(std::vector<cv::Rect>& boxes, std::vector<float>& confidences, flo
 // Function to receive and update the frame
 void updateFrame(cv::Mat frame, QLabel* frameLabel)
 {
-    // Load the pre-trained YOLO model
+    /*// Load the pre-trained YOLO model
     cv::dnn::Net net = cv::dnn::readNetFromDarknet("/home/barisayyildiz/yolov3.cfg", "/home/barisayyildiz/yolov3.weights");
     net.setPreferableBackend(cv::dnn::DNN_BACKEND_DEFAULT);
     net.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
@@ -110,6 +111,7 @@ void updateFrame(cv::Mat frame, QLabel* frameLabel)
         cv::putText(frame, label, cv::Point(boxes[i].x, boxes[i].y - labelSize.height - 5),
                     cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
     }
+    */
 
     // Convert the frame to QImage
     QImage image(frame.data, frame.cols, frame.rows, QImage::Format_RGB888);
@@ -120,8 +122,33 @@ void updateFrame(cv::Mat frame, QLabel* frameLabel)
     frameLabel->setScaledContents(true);
 }
 
+// Create a QTcpSocket object
+QTcpSocket directionSocket;
+
+// Function to send a message to the server
+void sendMessage(const QString& message)
+{
+    // Convert the message to a QByteArray
+    QByteArray data = message.toUtf8();
+
+    // Connect to the server
+    directionSocket.connectToHost("localhost", 9999);
+
+    if (directionSocket.waitForConnected())
+    {
+        // Send the message to the server
+        directionSocket.write(data);
+        directionSocket.waitForBytesWritten();
+    }
+    else
+    {
+        qDebug() << "Failed to connect to the server";
+    }
+}
+
 int main(int argc, char *argv[])
 {
+    // ======================== LAYOUT ======================== //
     QApplication app(argc, argv);
 
     // Create the main window
@@ -138,21 +165,69 @@ int main(int argc, char *argv[])
     QLabel* frameLabel = new QLabel(centralWidget);
     layout->addWidget(frameLabel);
 
-    // Create random buttons
-    for (int i = 0; i < 5; i++) {
-        QPushButton* button = new QPushButton(QString("Button %1").arg(i + 1), centralWidget);
-        layout->addWidget(button);
-    }
+    // Create a widget for the buttons
+    QWidget* buttonWidget = new QWidget(centralWidget);
+    QHBoxLayout* buttonLayout = new QHBoxLayout(buttonWidget);
+    layout->addWidget(buttonWidget);
+
+    // Create the buttons
+    QPushButton* forwardButton = new QPushButton("Forward", buttonWidget);
+    QPushButton* backwardButton = new QPushButton("Backward", buttonWidget);
+    QPushButton* stepRightButton = new QPushButton("Step Right", buttonWidget);
+    QPushButton* moveRightButton = new QPushButton("Move Right", buttonWidget);
+    QPushButton* stepLeftButton = new QPushButton("Step Left", buttonWidget);
+    QPushButton* moveLeftButton = new QPushButton("Move Left", buttonWidget);
+
+    // Add the buttons to the layout
+    buttonLayout->addWidget(forwardButton);
+    buttonLayout->addWidget(backwardButton);
+    buttonLayout->addWidget(stepRightButton);
+    buttonLayout->addWidget(moveRightButton);
+    buttonLayout->addWidget(stepLeftButton);
+    buttonLayout->addWidget(moveLeftButton);
+
+    // Connect button signals to event handlers
+    QObject::connect(forwardButton, &QPushButton::clicked, [&]() {
+        qDebug() << "Forward button clicked";
+        sendMessage("Forward");
+    });
+
+    QObject::connect(backwardButton, &QPushButton::clicked, [&]() {
+        qDebug() << "Backward button clicked";
+        sendMessage("Backward");
+    });
+
+    QObject::connect(stepRightButton, &QPushButton::clicked, [&]() {
+        qDebug() << "Step Right button clicked";
+        sendMessage("Step Right");
+    });
+
+    QObject::connect(moveRightButton, &QPushButton::clicked, [&]() {
+        qDebug() << "Move Right button clicked";
+        sendMessage("Move Right");
+    });
+
+    QObject::connect(stepLeftButton, &QPushButton::clicked, [&]() {
+        qDebug() << "Step Left button clicked";
+        sendMessage("Step Left");
+    });
+
+    QObject::connect(moveLeftButton, &QPushButton::clicked, [&]() {
+        qDebug() << "Move Left button clicked";
+        sendMessage("Move Left");
+    });
+
 
     // Set the layout to the central widget
     centralWidget->setLayout(layout);
 
     // Initialize the server communication and receive the frame
     // Replace this part with your server communication code from server.cpp
+    // ======================== END OF LAYOUT ======================== //
 
 
 
-
+    // ======================== SOCKETS ======================== //
     int server_socket, new_socket, valread;
     struct sockaddr_in address{};
     int addrlen = sizeof(address);
@@ -190,12 +265,10 @@ int main(int argc, char *argv[])
 
     std::cout << "test..." << "\n";
     int counter = 0;
+    // ======================== END OF SOCKETS ======================== //
 
 
     cv::Mat frame;
-
-
-
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, [&]() {
         //cap >> frame;
