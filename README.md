@@ -1,8 +1,8 @@
 
 ### Yapılacaklar
 
-- [ ] Şu anda kameradan veri geliyor, client (robot) üzerinden gelen kamera görüntüsünün işlenmesi gerek.
-- [ ] Görüntü ile birlikte sensörden gelen verilerin de raspberry üzerinden bu uygulamaya yollanması gerekiyor.
+- [x] Şu anda kameradan veri geliyor, client (robot) üzerinden gelen kamera görüntüsünün işlenmesi gerek.
+- [ ] Görüntü ile birlikte sensörden gelen verilerin de raspberry üzerinden (görüntüyü yollayan client ile aynı) bu uygulamaya yollanması gerekiyor.
 - [ ] İleri, geri, sağa, sola gitmesi için butonlar eklenmesi ve bu butonlardan raspberry üzerinde python ile çalışan sunucuya komut gönderilmesi gerekiyor
 - [ ] Manuel ve otonom butonları eklenmesi ve robot otonom durumda iken uygulamanın robotun gidiş yönüne karar vermesi gerekiyor, sensörlerden gelen verileri kullanarak.
 - [ ] Mapping'in de bu uygulama üzerinde yapılması gerekiyor
